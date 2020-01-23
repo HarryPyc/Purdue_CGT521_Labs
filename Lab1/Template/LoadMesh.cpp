@@ -146,9 +146,9 @@ void BufferIndexedVerts(MeshData& meshdata)
    const int tex_coord_loc = 1;
    const int normal_loc = 2;
 
-   glBindAttribLocation(program, pos_loc, "pos_attrib");
+   /*glBindAttribLocation(program, pos_loc, "pos_attrib");
    glBindAttribLocation(program, tex_coord_loc, "tex_coord_attrib");
-   glBindAttribLocation(program, normal_loc, "normal_attrib");
+   glBindAttribLocation(program, normal_loc, "normal_attrib");*/
 
    glGenVertexArrays(1, &meshdata.mVao);
    glBindVertexArray(meshdata.mVao);

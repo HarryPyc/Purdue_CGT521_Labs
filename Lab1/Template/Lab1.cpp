@@ -35,6 +35,7 @@ float time_sec = 0.0f;
 float angle = 0.0f;
 bool recording = false;
 
+void reload_shader();
 //Draw the user interface using ImGui
 void draw_gui()
 {
@@ -65,12 +66,15 @@ void draw_gui()
       }
    }
 
+   
    //create a slider to change the angle variables
    ImGui::SliderFloat("View angle", &angle, -3.141592f, +3.141592f);
 
    ImGui::Image((void*)texture_id, ImVec2(128,128));
 
-
+   if (ImGui::Button("Reload")) {
+	   reload_shader();
+   }
    ImGui::ShowDemoWindow();
    ImGui::Render();
  }
@@ -93,23 +97,21 @@ void display()
 
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, texture_id);
-   int tex_loc = glGetUniformLocation(shader_program, "diffuse_color");
-   if (tex_loc != -1)
-   {
-      glUniform1i(tex_loc, 0); // we bound our texture to texture unit 0
-   }
+   const int tex_loc = 1;
+   glUniform1i(tex_loc, 0); // we bound our texture to texture unit 0
 
-   int PVM_loc = glGetUniformLocation(shader_program, "PVM");
-   if (PVM_loc != -1)
-   {
-      glm::mat4 PVM = P*V*M;
-      glUniformMatrix4fv(PVM_loc, 1, false, glm::value_ptr(PVM));
-   }
+
+   const int PVM_loc = 2;
+   glm::mat4 PVM = P*V*M;
+   glUniformMatrix4fv(PVM_loc, 1, false, glm::value_ptr(PVM));
 
    glBindVertexArray(mesh_data.mVao);
    mesh_data.DrawMesh();
          
    draw_gui();
+
+   const int time_loc = 4;
+   glUniform1f(time_loc, time_sec);//send time to fragment shader
 
    if (recording == true)
    {
@@ -231,7 +233,7 @@ int main (int argc, char **argv)
    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
    glutInitWindowPosition (5, 5);
    glutInitWindowSize (1280, 720);
-   int win = glutCreateWindow ("CGT 521 Template");
+   int win = glutCreateWindow ("Yucong_Lab1");
 
    printGlInfo();
 
