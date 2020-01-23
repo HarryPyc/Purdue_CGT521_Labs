@@ -18,6 +18,7 @@
 #include "LoadTexture.h"
 #include "imgui_impl_glut.h"
 #include "VideoMux.h"
+#include "DebugCallback.h"
 
 //names of the shader files to load
 static const std::string vertex_shader("template_vs.glsl");
@@ -228,6 +229,10 @@ void mouse(int button, int state, int x, int y)
 
 int main (int argc, char **argv)
 {
+#if _DEBUG
+	glutInitContextFlags(GLUT_DEBUG);
+#endif
+	glutInitContextVersion(4, 3);
    //Configure initial window state using freeglut
    glutInit(&argc, argv); 
    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
@@ -251,6 +256,7 @@ int main (int argc, char **argv)
 
    initOpenGl();
    ImGui_ImplGlut_Init(); // initialize the imgui system
+   RegisterCallback();
 
    //Enter the glut event loop.
    glutMainLoop();
