@@ -146,7 +146,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="521Template.cpp" />
+    <ClCompile Include="DebugCallback.cpp" />
+    <ClCompile Include="Homework1.cpp" />
     <ClCompile Include="imgui_impl_glut.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="LoadMesh.cpp" />
     <ClCompile Include="LoadTexture.cpp" />
+    <ClCompile Include="Surf.cpp" />
     <ClCompile Include="VideoMux.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,6 +164,7 @@
     <None Include="template_vs.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugCallback.h" />
     <ClInclude Include="imgui_impl_glut.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
@@ -172,6 +175,7 @@
     <ClInclude Include="InitShader.h" />
     <ClInclude Include="LoadMesh.h" />
     <ClInclude Include="LoadTexture.h" />
+    <ClInclude Include="Surf.h" />
     <ClInclude Include="VideoMux.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

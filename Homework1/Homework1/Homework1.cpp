@@ -18,6 +18,8 @@
 #include "LoadTexture.h"
 #include "imgui_impl_glut.h"
 #include "VideoMux.h"
+#include "Surf.h"
+#include "DebugCallback.h"
 
 //names of the shader files to load
 static const std::string vertex_shader("template_vs.glsl");
@@ -28,13 +30,15 @@ GLuint texture_id = -1; //Texture map for fish
 
 //names of the mesh and texture files to load
 static const std::string mesh_name = "Amago0.obj";
-static const std::string texture_name = "AmagoT.bmp";
+static const std::string texture_name = "Pop.png";
 
 MeshData mesh_data;
 float time_sec = 0.0f;
 float angle = 0.0f;
 bool recording = false;
+GLuint vao;
 
+glm::vec3 lightPos(3, 0, 1);
 //Draw the user interface using ImGui
 void draw_gui()
 {
@@ -70,8 +74,6 @@ void draw_gui()
 
    ImGui::Image((void*)texture_id, ImVec2(128,128));
 
-
-   ImGui::ShowDemoWindow();
    ImGui::Render();
  }
 
@@ -87,9 +89,15 @@ void display()
    const int h = glutGet(GLUT_WINDOW_HEIGHT);
    const float aspect_ratio = float(w) / float(h);
 
-   glm::mat4 M = glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f))*glm::scale(glm::vec3(mesh_data.mScaleFactor));
-   glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 1.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+   glm::mat4 M = glm::rotate(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+   glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.5f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
    glm::mat4 P = glm::perspective(3.141592f / 4.0f, aspect_ratio, 0.1f, 100.0f);
+
+   const int lightPos_loc = 0;
+   glUniform3fv(lightPos_loc, 1, glm::value_ptr(lightPos));
+   
+   const int M_loc = 1;
+   glUniformMatrix4fv(M_loc, 1, false, glm::value_ptr(M));
 
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -105,9 +113,13 @@ void display()
       glm::mat4 PVM = P*V*M;
       glUniformMatrix4fv(PVM_loc, 1, false, glm::value_ptr(PVM));
    }
-
-   glBindVertexArray(mesh_data.mVao);
-   mesh_data.DrawMesh();
+   int PV_loc = glGetUniformLocation(shader_program, "PV");
+   if (PV_loc != -1)
+   {
+	   glm::mat4 PV = P * V;
+	   glUniformMatrix4fv(PV_loc, 1, false, glm::value_ptr(PV));
+   }
+   draw_surf(vao);
          
    draw_gui();
 
@@ -168,9 +180,12 @@ void initOpenGl()
 {
    //Initialize glew so that new OpenGL function names can be used
    glewInit();
+   
+   glEnable(GL_PRIMITIVE_RESTART);
 
+   RegisterCallback();
    glEnable(GL_DEPTH_TEST);
-
+   vao = create_surf_vao();
    reload_shader();
 
    //Load a mesh and a texture
@@ -226,12 +241,16 @@ void mouse(int button, int state, int x, int y)
 
 int main (int argc, char **argv)
 {
+#if _DEBUG
+	glutInitContextFlags(GLUT_DEBUG);
+#endif
+	glutInitContextVersion(4, 3);
    //Configure initial window state using freeglut
    glutInit(&argc, argv); 
    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
    glutInitWindowPosition (5, 5);
    glutInitWindowSize (1280, 720);
-   int win = glutCreateWindow ("CGT 521 Template");
+   int win = glutCreateWindow ("Yucong Pan");
 
    printGlInfo();
 
