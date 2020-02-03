@@ -15,10 +15,10 @@ vec3 light;
 vec3 ambient;
 vec3 diffuse;
 
-vec3 Ka = vec3(1.0);
-vec3 Kd = vec3(1.0);
-float La = 0.2f;
-float Ld = 3.0f;
+vec3 Ka = vec3(1.0);//ambient color
+vec3 Kd = vec3(1.0);//diffuse color
+float La = 0.2f;//ambient intensity
+float Ld = 3.0f;//diffuse intensity
 
 float Rd;
 float attenuation;
@@ -26,11 +26,12 @@ void main(void)
 {   
 	vec4 tex_color = texture(diffuse_color, tex_coord) * vec4(Color, 1);
 
-	Rd = max(dot(n, l), 0);
+	//Phong lighting model
+	Rd = max(dot(n, l), 0); 
 	attenuation = 1 / pow(length(dist), 2);
 
-	ambient = vec3(tex_color) * La;
-	diffuse = vec3(tex_color) * Rd * Ld;
+	ambient = vec3(tex_color) * La; //ambient color
+	diffuse = vec3(tex_color) * Rd * Ld;//diffuse color
 
 	light = ambient + attenuation * (diffuse );
 

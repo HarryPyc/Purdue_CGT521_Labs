@@ -119,7 +119,8 @@ void display()
 	   glm::mat4 PV = P * V;
 	   glUniformMatrix4fv(PV_loc, 1, false, glm::value_ptr(PV));
    }
-   draw_surf(vao);
+
+   draw_surf(vao);//single draw call
          
    draw_gui();
 
@@ -185,7 +186,9 @@ void initOpenGl()
 
    RegisterCallback();
    glEnable(GL_DEPTH_TEST);
-   vao = create_surf_vao();
+
+   vao = create_surf_vao();//create and bind vao,vbo,ebo
+
    reload_shader();
 
    //Load a mesh and a texture

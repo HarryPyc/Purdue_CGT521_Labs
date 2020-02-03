@@ -37,8 +37,9 @@ static glm::vec3 normal(int i, int j)
 }
 
 inline glm::vec2 tex_coord(int i, int j) {
-	return glm::vec2(float(i) / N, float(j) / N);
+	return glm::vec2(float(i) / N, float(j) / N);  //u, v
 }
+
 GLuint create_surf_vbo()
 {
 	float vertices[NUM_VERTICES * 8];
@@ -50,12 +51,16 @@ GLuint create_surf_vbo()
 		index++;
 		j = index / N;
 		i = index % N;
+		//interleaved vbo
+		//vertex position
 		vertices[row] = pos.x;
 		vertices[row + 1] = pos.y;
 		vertices[row + 2] = pos.z;
+		//normal vector
 		vertices[row + 3] = n.x;
 		vertices[row + 4] = n.y;
 		vertices[row + 5] = n.z;
+		//texture coordinates
 		vertices[row + 6] = uv.x;
 		vertices[row + 7] = uv.y;
 	}
@@ -70,6 +75,8 @@ GLuint create_surf_vbo()
 
 	return vbo;
 }
+
+//instanced transform matrices
 GLuint create_M_vbo() {
 	std::vector<glm::mat4> Matrices;
 	glm::mat4 M = glm::mat4(1.0);
@@ -90,6 +97,8 @@ GLuint create_M_vbo() {
 
 	return vbo;
 }
+
+//instanced color
 GLuint create_color_vbo() {
 	std::vector<glm::vec3> color_buffer;
 	for (int i = 0; i < 9; i++) {
@@ -101,10 +110,13 @@ GLuint create_color_vbo() {
 	glBufferData(GL_ARRAY_BUFFER, color_buffer.size() * sizeof(glm::vec3), &color_buffer[0], GL_STATIC_DRAW);
 	return vbo;
 }
+
+
 GLuint create_surf_ebo() {
 	GLuint ebo;
 	glGenBuffers(1, &ebo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+
 	int indices[NUM_VERTICES + 50];
 	int index = 0;
 	for (int j = 0; j < N; j++) {
@@ -114,13 +126,15 @@ GLuint create_surf_ebo() {
 			else
 				indices[index++] = i - 1 + (j + 1) * N;
 		}
-		indices[index++] = RESTART;
+		indices[index++] = RESTART;//insert primitive restart index
 	}
 	
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices[0], GL_STATIC_DRAW);
 	glPrimitiveRestartIndex(RESTART);
 	return ebo;
 }
+
+
 GLuint create_surf_vao()
 {
 	GLuint vao;
@@ -137,18 +151,19 @@ GLuint create_surf_vao()
 	const GLuint pos_loc = 0;
 	const GLuint normal_loc = 1;
 	const GLuint tex_loc = 2;
-	const GLuint M_loc = 3;
 	glEnableVertexAttribArray(pos_loc); //Enable the position attribute.
 	glEnableVertexAttribArray(normal_loc);
 	glEnableVertexAttribArray(tex_loc);
-	glEnableVertexAttribArray(M_loc);
 	//Tell opengl how to get the attribute values out of the vbo (stride and offset).
-	//In this case, the vertices are at the beginning of the VBO and are tightly packed.
 	glVertexAttribPointer(pos_loc, 3, GL_FLOAT, false, 8 * sizeof(float), (void*)0);
 	glVertexAttribPointer(normal_loc, 3, GL_FLOAT, false, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glVertexAttribPointer(tex_loc, 2, GL_FLOAT, false, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	
+	//bind a new vbo
 	GLuint Mvbo = create_M_vbo();
+
+	const GLuint M_loc = 3;
+	glEnableVertexAttribArray(M_loc);
 	int pos1 = M_loc + 0;
 	int pos2 = M_loc + 1;
 	int pos3 = M_loc + 2;
@@ -157,7 +172,7 @@ GLuint create_surf_vao()
 	glEnableVertexAttribArray(pos2);
 	glEnableVertexAttribArray(pos3);
 	glEnableVertexAttribArray(pos4);
-	
+	//Matrix can only be passed as four vec4
 	glVertexAttribPointer(pos1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
 	glVertexAttribPointer(pos2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * (4)));
 	glVertexAttribPointer(pos3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * (8)));
@@ -168,8 +183,10 @@ GLuint create_surf_vao()
 	glVertexAttribDivisor(pos4, 1);
 
 	GLuint Cvbo = create_color_vbo();
+
 	const int color_pos = 7;
 	glEnableVertexAttribArray(color_pos);
+
 	glVertexAttribPointer(color_pos, 3, GL_FLOAT, false, 0, 0);
 	glVertexAttribDivisor(color_pos, 1);
 	glBindVertexArray(0); //unbind the vao
@@ -182,8 +199,6 @@ void draw_surf(GLuint vao)
 {
 	glBindVertexArray(vao);
 	
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElementsInstanced(GL_TRIANGLE_STRIP, NUM_VERTICES, GL_UNSIGNED_INT, 0, 9);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
 }
