@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="521Template.cpp" />
+    <ClCompile Include="DebugCallback.cpp" />
     <ClCompile Include="imgui_impl_glut.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
@@ -162,6 +163,7 @@
     <None Include="template_vs.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DebugCallback.h" />
     <ClInclude Include="imgui_impl_glut.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />

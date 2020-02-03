@@ -51,6 +51,9 @@
     <ClCompile Include="imgui_impl_glut.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="DebugCallback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="template_fs.glsl">
@@ -93,6 +96,9 @@
     </ClInclude>
     <ClInclude Include="include\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugCallback.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
