@@ -117,14 +117,12 @@ GLuint create_surf_ebo() {
 	glGenBuffers(1, &ebo);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-	int indices[NUM_VERTICES + 50];
+	int indices[ 2 * NUM_VERTICES + N];
 	int index = 0;
-	for (int j = 0; j < N; j++) {
+	for (int j = 0; j < N - 1; j++) {
 		for (int i = 0; i < N; i++) {
-			if (i % 2 == 0)
 				indices[index++] = i + j * N;
-			else
-				indices[index++] = i - 1 + (j + 1) * N;
+				indices[index++] = i + (j + 1) * N;
 		}
 		indices[index++] = RESTART;//insert primitive restart index
 	}
@@ -198,7 +196,7 @@ GLuint create_surf_vao()
 void draw_surf(GLuint vao)
 {
 	glBindVertexArray(vao);
-	
-	glDrawElementsInstanced(GL_TRIANGLE_STRIP, NUM_VERTICES, GL_UNSIGNED_INT, 0, 9);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawElementsInstanced(GL_TRIANGLE_STRIP, 2 * NUM_VERTICES + N - 1, GL_UNSIGNED_INT, 0, 9);
 	
 }
