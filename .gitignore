@@ -3,7 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-!Lab FBO/bunny.obj
+
 
 # User-specific files
 *.rsuser
@@ -11,6 +11,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -73,6 +74,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!Lab FBO/bunny.obj
 *.iobj
 *.pch
 *.pdb
