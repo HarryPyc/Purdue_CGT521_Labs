@@ -34,8 +34,9 @@ GLuint depth_buffer = -1;
 GLuint pick_tex = -1;
 GLuint fbo2_texture = -1;
 
-int width = 1280;
-int height = 720;
+int window_w = 1280;
+int window_h = 720;
+
 int id = -1;
 static const std::string mesh_name = "Amago0.obj";
 static const std::string texture_name = "AmagoT.bmp";
@@ -63,7 +64,7 @@ void draw_pass_1()
 
    M = glm::translate(glm::vec3(-0.5f, 0.5f, 0.0f));
    V = glm::lookAt(glm::vec3(0.0f, 0.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-   float ratio = float(width) / height;
+   float ratio = float(window_w) / window_h;
    P = glm::perspective(40.0f, ratio, 0.1f, 100.0f);
 
    int pass_loc = glGetUniformLocation(shader_program, "pass");
@@ -164,11 +165,11 @@ void display()
    glDrawBuffers(2, drawBuffers); //Out variable in frag shader will be written to the texture attached to GL_COLOR_ATTACHMENT0.
 
    //Make the viewport match the FBO texture size.
-   int tex_w, tex_h;
+  /* int tex_w, tex_h;
    glBindTexture(GL_TEXTURE_2D, fbo_texture);
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_w);
    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_h);
-   glViewport(0, 0, tex_w, tex_h);
+   glViewport(0, 0, tex_w, tex_h);*/
 
    //Clear the FBO.
    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); //Lab assignment: don't forget to also clear depth
@@ -184,7 +185,7 @@ void display()
    glDrawBuffer(GL_BACK); // Render to back buffer.
 
 
-   glViewport(0, 0, width, height); //Render to the full viewport
+   glViewport(0, 0, window_w, window_h); //Render to the full viewport
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //Clear the back buffer
 
    draw_pass_3();
@@ -270,12 +271,12 @@ void motion(int x, int y)
 void mouse(int button, int state, int x, int y)
 {
 	ImGui_ImplGlut_MouseButtonCallback(button, state);
-	if (state == 0) {
+	if (button == 0 && state == 0) {
 		GLubyte buffers[4];
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 		glReadBuffer(GL_COLOR_ATTACHMENT1);
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
-		glReadPixels(x, height - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, buffers);
+		glReadPixels(x, window_h - y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, buffers);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		id = (int)buffers[0];
 		std::cout << "ID: " << id << std::endl;
@@ -284,9 +285,9 @@ void mouse(int button, int state, int x, int y)
 }
 
 void resize(int w, int h) {
-	width = w;
-	height = h;
-	glViewport(0, 0, width, height);
+	window_w = w;
+	window_h = h;
+	glViewport(0, 0, window_w, window_h);
 }
 
 void printGlInfo()
@@ -305,6 +306,9 @@ void initOpenGl()
 
    reload_shader();
 
+   int screen_w = glutGet(GLUT_SCREEN_WIDTH);
+   int screen_h = glutGet(GLUT_SCREEN_HEIGHT);
+   std::cout << "Screen Size:" << screen_w << "*" << screen_h << std::endl;
    //mesh and texture for pass 1
    mesh_data = LoadMesh(mesh_name);
    texture_id = LoadTexture(texture_name.c_str());
@@ -332,7 +336,7 @@ void initOpenGl()
    //Lab assignment: make the texture width and height be the window width and height.
    glGenTextures(1, &fbo_texture);
    glBindTexture(GL_TEXTURE_2D, fbo_texture);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screen_w, screen_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -341,7 +345,7 @@ void initOpenGl()
 
    glGenTextures(1, &pick_tex);
    glBindTexture(GL_TEXTURE_2D, pick_tex);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screen_w, screen_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -350,7 +354,7 @@ void initOpenGl()
 
    glGenTextures(1, &fbo2_texture);
    glBindTexture(GL_TEXTURE_2D, fbo2_texture);
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screen_w, screen_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -359,7 +363,7 @@ void initOpenGl()
    //Lab assignment: Create renderbuffer for depth.
    glGenRenderbuffers(1, &depth_buffer);
    glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
-   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, screen_w, screen_h);
 
    //Create the framebuffer object
    glGenFramebuffers(1, &fbo_id);
@@ -381,7 +385,7 @@ int main (int argc, char **argv)
    glutInit(&argc, argv); 
    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
    glutInitWindowPosition (5, 5);
-   glutInitWindowSize (width, height);
+   glutInitWindowSize (window_w, window_h);
    int win = glutCreateWindow ("Lab FBO solution");
 
    printGlInfo();

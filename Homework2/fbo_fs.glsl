@@ -33,10 +33,10 @@ void main(void)
 			fragcolor = pow(left - right, vec4(2)) + pow(above - below, vec4(2));
 		}
 		else {
-			/*vec4 t1 = texelFetch(texture, ivec2(gl_FragCoord.xy), 0);
-			vec4 t2 = texelFetch(texture2, ivec2(gl_FragCoord.xy),0);*/
-			vec4 t1 = texture2D(texture, tex_coord);
-			vec4 t2 = texture2D(texture2, tex_coord);
+			vec4 t1 = texelFetch(texture, ivec2(gl_FragCoord.xy), 0);
+			vec4 t2 = texelFetch(texture2, ivec2(gl_FragCoord.xy),0);
+			//vec4 t1 = texture2D(texture, tex_coord);
+			//vec4 t2 = texture2D(texture2, tex_coord);
 
 			if (t1.w != 0)
 				fragcolor = t1;
