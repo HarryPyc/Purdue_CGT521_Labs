@@ -40,12 +40,13 @@ GLuint fbo_texture_height = 720;
 GLuint fbo;
 
 float time_sec = 0.0f;
-
+glm::vec4 Ka(0.4, 0.4, 0.34, 1.0), Kd(1.0, 1.0, 0.73, 1.0), Ks(0.1, 0.1, 0.073, 1.0);
+float IOR = 2.5f, m = 0.05f;
 //Camera params
 float angle = 0.0f;
 float fov = 3.141592f / 4.0f;
 float height = 2.0f;
-
+glm::vec3 cam(2.0f, 2.0f, height);
 bool recording = false;
 
 void display_inside_out();
@@ -84,7 +85,7 @@ void draw_gui()
       ImGui::Image((void*)fbo_texture, ImVec2(128.0f, 128.0f), ImVec2(0.0, 1.0), ImVec2(1.0, 0.0));
       ImGui::NextColumn();
 
-      static int mode = 0;
+      static int mode = 2;
       ImGui::RadioButton("Show back faces", &mode, 0);
       ImGui::RadioButton("Show front faces", &mode, 1);
       ImGui::RadioButton("Show raycasting", &mode, 2);
@@ -114,8 +115,12 @@ void draw_gui()
 
    ImGui::Columns(1);
    
-   ImGui::SliderFloat("Height", &height, -10.0f, +10.0f);
-   ImGui::SliderFloat("View angle", &angle, -3.141592f, +3.141592f);
+   if (ImGui::SliderFloat("Height", &height, -10.0f, +10.0f)) {
+	   cam.z = height;
+   }
+   if (ImGui::SliderFloat("View angle", &angle, -3.141592f, +3.141592f)) {
+	   cam = glm::rotate(angle, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::vec4(2.0, 2.0, height, 1.0);
+   }
    ImGui::SliderFloat("FOV", &fov, 0.0f, +3.141592f);
 
    static glm::vec4 slider(0.0f);
@@ -123,7 +128,28 @@ void draw_gui()
    {
       glUniform4fv(UniformLoc::Slider, 1, &slider[0]);
    }
+   if (ImGui::SliderFloat4("Ambient", &Ka[0], 0.f, 1.f)) {
+	   glUniform4fv(UniformLoc::Ka, 1, &Ka[0]);
+   }
+   if (ImGui::SliderFloat4("Diffuse", &Kd[0], 0.f, 1.f)) {
+	   glUniform4fv(UniformLoc::Kd, 1, &Kd[0]);
+   }
+   if (ImGui::SliderFloat4("Specular", &Ks[0], 0.f, 1.f)) {
+	   glUniform4fv(UniformLoc::Ks, 1, &Ks[0]);
+   }
+   static int lightMode = 0;
+   ImGui::RadioButton("Full", &lightMode, 0);
+   ImGui::RadioButton("Only F", &lightMode, 1);
+   ImGui::RadioButton("Only D", &lightMode, 2);
+   ImGui::RadioButton("Only G", &lightMode, 3);
+   glUniform1i(UniformLoc::LightMode, lightMode);
 
+   if (ImGui::SliderFloat("Index of Refraction", &IOR, 0.f, 3.f)) {
+	   glUniform1f(UniformLoc::IOR, IOR);
+   }
+   if (ImGui::SliderFloat("m", &m, 0.f, 3.f)) {
+	   glUniform1f(UniformLoc::m, m);
+   }
    ImGui::Render();
  }
 
@@ -139,7 +165,7 @@ void display_outside_in()
 
    //Set up some uniform variables for transformation matrices
    glm::mat4 M = glm::scale(glm::vec3(1.0f));
-   glm::mat4 V = glm::lookAt(glm::vec3(2.0f, 2.0f, height), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f))*glm::rotate(angle, glm::vec3(0.0f, 0.0f, 1.0f));
+   glm::mat4 V = glm::lookAt(cam, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
    glm::mat4 P = glm::perspective(fov, aspect_ratio, 0.1f, 100.0f);
    glm::mat4 T(1.0f);
 
@@ -208,7 +234,7 @@ void display_inside_out()
    //Set up some uniform variables
    glm::mat4 M1 = glm::scale(glm::vec3(1.0f));
    glm::mat4 M2 = glm::scale(glm::vec3(10.0f));
-   glm::mat4 V = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(angle, glm::vec3(0.0f, 0.0f, 1.0f));
+   glm::mat4 V = glm::lookAt(cam, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(angle, glm::vec3(0.0f, 0.0f, 1.0f));
    V[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
    glm::mat4 P = glm::perspective(fov, aspect_ratio, 0.1f, 100.0f);
    glm::mat4 T = glm::translate(glm::vec3(2.0f, 2.0f, height));
@@ -275,7 +301,7 @@ void idle()
 
    const int time_ms = glutGet(GLUT_ELAPSED_TIME);
    time_sec = 0.001f*time_ms;
-
+   glUniform3fv(UniformLoc::cam, 1, &cam[0]);
    glUniform1f(UniformLoc::Time, time_sec);
 }
 
@@ -317,6 +343,7 @@ void initOpenGl()
    RegisterCallback();
 
    glEnable(GL_DEPTH_TEST);
+   glEnable(GL_ALPHA_TEST);
    glEnable(GL_CULL_FACE);
    glFrontFace(GL_CW);
 
@@ -348,6 +375,10 @@ void initOpenGl()
 
    //unbind the fbo
    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+   glUniform4fv(UniformLoc::Ka, 1, &Ka[0]);
+   glUniform4fv(UniformLoc::Kd, 1, &Kd[0]);
+   glUniform4fv(UniformLoc::Ks, 1, &Ks[0]);
 }
 
 // glut callbacks need to send keyboard and mouse events to imgui

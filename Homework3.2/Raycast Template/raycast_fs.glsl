@@ -1,15 +1,24 @@
 #version 430
 
 layout(location = 1) uniform int pass;
+layout(location = 2) uniform int lightMode = 0;
 layout(location = 3) uniform int mode = 0;
 layout(location = 6) uniform float time;
 layout(location = 7) uniform vec4 slider;
 layout(location = 8) uniform int scene = 0;
+layout(location = 9) uniform vec4 Ka;
+layout(location = 10) uniform vec4 Kd;
+layout(location = 11) uniform vec4 Ks;
+layout(location = 12) uniform vec3 cam;
+layout(location = 13) uniform float IOR = 2.5f;
+layout(location = 14) uniform float m = 0.05f;
 
 layout(binding = 0) uniform sampler2D backfaces_tex;
 
 layout(location = 0) out vec4 fragcolor;  
-         
+
+const float PI = 3.1415926535897932384626433832795;
+const float eps = 1e-6;
 in vec3 vpos;  
 
 //forward function declarations
@@ -23,12 +32,7 @@ const vec3 light_pos = vec3(5.0, 5.0, 5.0);
 
 const vec4 La = vec4(0.75, 0.75, 0.75, 1.0);
 const vec4 Ld = vec4(0.74, 0.74, 0.74, 1.0);
-const vec4 Ls = vec4(1.0, 1.0, 0.74, 1.0);
-
-const vec4 Ka = vec4(0.4, 0.4, 0.34, 1.0);
-const vec4 Kd = vec4(1.0, 1.0, 0.73, 1.0);
-const vec4 Ks = vec4(0.1, 0.1, 0.073, 1.0);
-
+const vec4 Ls = vec4(1.0, 1.0, 1.0, 1.0);
 
 void main(void)
 {   
@@ -90,17 +94,30 @@ vec4 raytracedcolor(vec3 rayStart, vec3 rayStop)
 
 float shadow(in vec3 ro, in vec3 rd, float mint, float maxt);
 float softshadow(in vec3 ro, in vec3 rd, float mint, float maxt, float w);
+//Cook-Torrance BRDF
+float F(float IOR, vec3 n, vec3 v);
+float D(float m, vec3 n, vec3 h);
+float G(vec3 n, vec3 l, vec3 v, vec3 h);
 //Compute lighting on the raycast surface using Phong lighting model
 vec4 lighting(vec3 pos, vec3 rayDir)
 {
 	const vec3 light = normalize(light_pos-pos); //light direction from surface
 	vec3 n = normal(pos);
-
+	vec3 v = normalize(cam - pos);
+	vec3 h = normalize(light + v);
 	vec4 La = clear_color(n);
-	float sha = shadow(pos, light, 0.01, 3.0);
-	float diff = max(0.0, dot(n, light)) * sha ;
-
-	return La*Ka + Ld*Kd*diff;	
+	float sha = softshadow(pos, light, 0.01, 3.0, 0.8);
+	float diff = max(0.0, dot(n, light));
+	float spec = 1 / (PI*dot(n, v)*dot(n, light) + eps);
+	if (lightMode == 0)
+		spec *= F(IOR, n, v)*D(m, n, h)*G(n, light, v, h);
+	else if (lightMode == 1)
+		spec *= F(IOR, n, v);
+	else if (lightMode == 2)
+		spec *= D(m, n, h);
+	else if (lightMode == 3)
+		spec *= G(n, light, v, h);
+	return La*Ka + (Ld*Kd*diff + Ls*Ks*spec)*sha;	
 }
 
 vec4 clear_color(vec3 rayDir)
@@ -136,17 +153,16 @@ float distToShape(vec3 pos)
 		const vec2 t = vec2(0.5f,0.1f*(sin(time)+1.5f));
 		vec3 offset = 2.0*slider.xyz;
 		float d0 = sdTorus(pos+offset, t);
-		return d0;
+		float d2 = sdPlane(pos, 0.5);
+		return min(d0, d2);
 	}
 
 	else if(scene == 1)
 	{
 		float s = 0.5f*(slider.w + 1.f);
-		float h = 0.5f;
 		vec3 offset = 2.0*slider.xyz;
 		float d1 = sdOctahedron(pos + offset, s);
-		float d2 = sdPlane(pos, h);
-		return min(d1,d2);
+		return d1;
 	}
 
 	else if(scene == 2)
@@ -198,18 +214,22 @@ vec3 normal(vec3 pos)
 
 	return normalize(vec3(distToShape(pos+Xh)-distToShape(pos-Xh), distToShape(pos+Yh)-distToShape(pos-Yh), distToShape(pos+Zh)-distToShape(pos-Zh)));
 }
-float softshadow(in vec3 ro, in vec3 rd, float mint, float maxt, float w)
+float softshadow(in vec3 ro, in vec3 rd, float mint, float maxt, float k)
 {
-	float s = 1.0;
+	float res = 1.0;
+	float ph = 1e20;
 	for (float t = mint; t < maxt; )
 	{
 		float h = distToShape(ro + rd * t);
-		s = min(s, 0.5 + 0.5*h / (w*t));
-		if (s < 0.0) break;
+		if (h < 0.001)
+			return 0.0;
+		float y = h * h / (2.0*ph);
+		float d = sqrt(h*h - y * y);
+		res = min(res, k*d / max(0.0, t - y));
+		ph = h;
 		t += h;
 	}
-	s = max(s, 0.0);
-	return s * s*(3.0 - 2.0*s); // smoothstep
+	return res;
 }
 float shadow(in vec3 ro, in vec3 rd, float mint, float maxt)
 {
@@ -221,4 +241,24 @@ float shadow(in vec3 ro, in vec3 rd, float mint, float maxt)
 		t += h;
 	}
 	return 1.0;
+}
+
+float F(float IOR, vec3 n, vec3 v) {
+	float F0 = (1 - IOR) / (1 + IOR);
+	F0 = F0 * F0;
+	float cosT = dot(n, v);
+	return F0 + (1 - F0)*pow(1 - cosT, 5);
+}
+float D(float m, vec3 n, vec3 h) {
+	float cosA2 = dot(n, h);
+	cosA2 = cosA2 * cosA2;
+	float tanA2 = (1 - cosA2) / cosA2;
+	float m2 = m * m;
+	return exp(-tanA2 / m2) / (4 * m2*cosA2*cosA2 + eps);
+}
+float G(vec3 n, vec3 l, vec3 v, vec3 h) {
+	float temp = 2 * dot(n, h) / (dot(h, v)+eps);
+	float Gm = dot(n, v)*temp;
+	float Gs = dot(n, l)*temp;
+	return min(1.f, min(Gm, Gs));
 }
