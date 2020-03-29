@@ -23,32 +23,32 @@
     <ProjectGuid>{BBC89CC5-DBA4-4E8A-95B5-E1FA9782B2AF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Template</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -74,6 +74,8 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\include;$(ProjectDir)\include\imgui;$(ProjectDir)\include;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(Project)\lib;$(ProjectDir)\lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);$(ProjectDir)\src;</SourcePath>
+    <ReferencePath>$(VC_ReferencesPath_x86);$(ProjectDir)\bin;</ReferencePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -82,6 +84,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\include;$(ProjectDir)\include\imgui;</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(Project)\lib;$(ProjectDir)\lib;</LibraryPath>
+    <SourcePath>$(VC_SourcePath);$(ProjectDir)\src;</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -146,35 +149,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="521Template.cpp" />
-    <ClCompile Include="DebugCallback.cpp" />
-    <ClCompile Include="imgui_impl_glut.cpp" />
     <ClCompile Include="include\imgui\imgui.cpp" />
     <ClCompile Include="include\imgui\imgui_demo.cpp" />
     <ClCompile Include="include\imgui\imgui_draw.cpp" />
     <ClCompile Include="include\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="InitShader.cpp" />
-    <ClCompile Include="LoadMesh.cpp" />
-    <ClCompile Include="LoadTexture.cpp" />
-    <ClCompile Include="VideoMux.cpp" />
+    <ClCompile Include="src\521Template.cpp" />
+    <ClCompile Include="src\DebugCallback.cpp" />
+    <ClCompile Include="src\imgui_impl_glut.cpp" />
+    <ClCompile Include="src\InitShader.cpp" />
+    <ClCompile Include="src\LoadMesh.cpp" />
+    <ClCompile Include="src\LoadTexture.cpp" />
+    <ClCompile Include="src\VideoMux.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="template_fs.glsl" />
-    <None Include="template_vs.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DebugCallback.h" />
-    <ClInclude Include="imgui_impl_glut.h" />
     <ClInclude Include="include\imgui\imconfig.h" />
     <ClInclude Include="include\imgui\imgui.h" />
     <ClInclude Include="include\imgui\imgui_internal.h" />
     <ClInclude Include="include\imgui\imstb_rectpack.h" />
     <ClInclude Include="include\imgui\imstb_textedit.h" />
     <ClInclude Include="include\imgui\imstb_truetype.h" />
-    <ClInclude Include="InitShader.h" />
-    <ClInclude Include="LoadMesh.h" />
-    <ClInclude Include="LoadTexture.h" />
-    <ClInclude Include="VideoMux.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\template_fs.glsl" />
+    <None Include="shader\template_vs.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
